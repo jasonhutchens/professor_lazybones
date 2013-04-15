@@ -1,4 +1,4 @@
-lazybones
-=========
+Dwarf Squad
+===========
 
-Lazybones is a game about making games
+Dwarf Squad is a game about making games
