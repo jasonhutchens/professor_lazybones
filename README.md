@@ -2,3 +2,38 @@ Dwarf Squad
 ===========
 
 Dwarf Squad is a game about making games
+
+* map is made of 32px tiles
+* aim is to god 4 dwarves to collect loot
+* limited set of commands cards
+  + move (0 = until blocked, 1-9 = steps)
+    - moving against a pushable takes 2 steps
+  + face (n, s, e, w, l, r, u)
+  + wait (0 = forever, 1-9 = steps)
+  + work (0 = forever, 1-9 = steps)
+  + take (n, s, e, w, l, r, u, x)
+  + give (n, s, e, w, l, r, u, x, i)
+  + swap (1-9 = inventory items)
+  + loop (0 = forever, 1-9 = steps)
+  + bomb (0 = now, 1-9 = steps)
+  + stop (breakpoint)
+* items in the level
+  + loot (aim is to add these to inventory, quote for each level)
+  + food
+  + pick
+  + axe
+  + shield
+  + switch
+  + door
+  + key
+* dwarves have HP and perhaps different skillz
+* select a dwarf, and command it
+* play / step through the level
+* dwarf dialog for errors etc
+* all other entities have programs too which you can inspect!
+* bit of story too
+
+TODO
+
+* interface for the level, including selection and stuff (boring)
+* implement the little programs to make stuff happen (fun)
