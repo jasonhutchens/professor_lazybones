@@ -63,6 +63,23 @@ class Player < Chingu::GameObject
 
   def setup
     @image = Gosu::Image['captain.png']
+    @cell = [2, 0]
+    update
+  end
+
+  def update
+    super
+    _update_position
+  end
+
+  def draw
+    super
+  end
+
+  private
+
+  def _update_position
+    @x, @y = @cell.map { |v| (v+1.5)*48 }
   end
 
 end
