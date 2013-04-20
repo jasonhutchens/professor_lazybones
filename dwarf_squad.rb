@@ -8,7 +8,7 @@ Bundler.require(:default)
 class Game < Chingu::Window
 
   def initialize
-    super(800, 600, false)
+    super(1200, 675, false)
 
     self.input = {
       escape: :exit
@@ -35,7 +35,26 @@ class Level < Chingu::GameState
   end
 
   def draw
+    _draw_guide
+    c = 0xFFFFFFFF
+    (0...$window.width).step(48) do |x|
+      $window.draw_line(x, 0, c, x, $window.height, c)
+    end
+    (0..$window.height).step(48) do |y|
+      $window.draw_line(0, y, c, $window.width, y, c)
+    end
     super
+  end
+
+  private
+
+  def _draw_guide
+    c = 0xAAFF0000
+    $window.draw_quad(48,48,c,16*48,48,c,16*48,11*48,c,48,11*48,c)
+    c = 0xAA00FF00
+    $window.draw_quad(17*48,48,c,24*48,48,c,24*48,11*48,c,17*48,11*48,c)
+    c = 0xAA0000FF
+    $window.draw_quad(48,12*48,c,24*48,12*48,c,24*48,13*48,c,48,13*48,c)
   end
 
 end
