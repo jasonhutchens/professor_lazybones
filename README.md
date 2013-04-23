@@ -37,3 +37,5 @@ TODO
 
 * interface for the level, including selection and stuff (boring)
 * implement the little programs to make stuff happen (fun)
+
+* VM that runs the programs with registers that we can read off for controlling entities

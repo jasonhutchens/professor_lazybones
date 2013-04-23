@@ -73,7 +73,7 @@ class Player < Chingu::GameObject
 
   def setup
     @image = Gosu::Image['captain.png']
-    @cell = [2, 0]
+    @cell = [7, 5]
     @code = [ { M: 2 }, { T: 8 }, { N: 0 }, { M: 3 }, { T: 6 }, { L: 3 }, { Z: 3 }, { X: 0 } ]
     @heading = 1
     @pointer = -1
@@ -133,10 +133,13 @@ class Player < Chingu::GameObject
       when :W
       when :L
         @pointer = @label
+        _load
+        true
       when :X
       when :N
         @label = @pointer
         _increment and _load
+        true
       else
         raise
     end
