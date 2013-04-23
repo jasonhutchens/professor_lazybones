@@ -59,16 +59,34 @@ class Level < Chingu::GameState
 
 end
 
+# + M move (0 = until blocked, 1-8 = steps)
+# + T turn (x, n, s, e, w, f, r, b, l)
+# + Z sleep (1-8 = steps)
+# + U use (1-8 = steps)
+# + D drop (x, n, e, s, w, f, r, b, l)
+# + W wield (0 = nothing, 1-8 = inventory items)
+# + L loop (1-8 = steps)
+# + X explode (0-8 = steps)
+# + N noop (used for loop point only)
+
 class Player < Chingu::GameObject
 
   def setup
     @image = Gosu::Image['captain.png']
     @cell = [2, 0]
+    @code = [ { M: 2 }, { T: 8 }, { N: 0 }, { M: 3 }, { T: 6 }, { L: 3 }, { Z: 3 }, { X: 0 } ]
+    @heading = 1
+    @pointer = -1
+    @opcode = -1
+    @data = -1
+    @label = -1
+    @loop = -1
     update
   end
 
   def update
     super
+    _run_code
     _update_position
   end
 
@@ -80,6 +98,99 @@ class Player < Chingu::GameObject
 
   def _update_position
     @x, @y = @cell.map { |v| (v+1.5)*48 }
+  end
+
+  def _run_code
+    if @pointer < 0
+      _reboot
+    else
+      true while _step
+    end
+  end
+
+  def _reboot
+    @pointer = 0
+    _load
+  end
+
+  def _step
+    puts "#{@opcode}(#{@data})"
+    case @opcode
+      when :M
+        # TODO: move guy in heading
+        _move
+        @data -= 1
+        _increment and _load if @data == 0
+        false
+      when :T
+        _turn(@data)
+        # TODO: set heading
+        _increment and _load
+        true
+      when :Z
+      when :U
+      when :D
+      when :W
+      when :L
+        @pointer = @label
+      when :X
+      when :N
+        @label = @pointer
+        _increment and _load
+      else
+        raise
+    end
+  end
+
+  def _load
+    @opcode, @data = @code[@pointer].to_a.flatten
+  end
+
+  def _move
+    case @heading
+      when 1
+        @cell[1] -= 1
+      when 2
+        @cell[0] += 1
+      when 3
+        @cell[1] += 1
+      when 4
+        @cell[0] -= 1
+      else
+        raise
+    end
+    @cell[0] = 14 if @cell[0] < 0
+    @cell[0] = 0 if @cell[0] > 14
+    @cell[1] = 9 if @cell[1] < 0
+    @cell[1] = 0 if @cell[1] > 9
+  end
+
+  def _turn(data)
+    case data
+      when 1
+        @heading = 1
+      when 2
+        @heading = 2
+      when 3
+        @heading = 3
+      when 4
+        @heading = 4
+      when 5
+      when 6
+        @heading += 1
+        @heading = 1 if @heading > 4
+      when 7
+        @heading = 5 - @heading
+      when 8
+        @heading -= 1
+        @heading = 4 if @heading < 1
+      else
+        raise
+    end
+  end
+
+  def _increment
+    @pointer += 1
   end
 
 end

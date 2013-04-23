@@ -3,19 +3,19 @@ Dwarf Squad
 
 Dwarf Squad is a game about making games
 
-* map is made of 32px tiles
+* map is made of 48px tiles
 * aim is to god 4 dwarves to collect loot
 * limited set of commands cards
-  + move (0 = until blocked, 1-9 = steps)
-    - moving against a pushable takes 2 steps
+  + move (0 = until blocked, 1-8 = steps)
+    - moving against a pushable takes double the steps
   + face (n, s, e, w, l, r, u)
-  + wait (0 = forever, 1-9 = steps)
-  + work (0 = forever, 1-9 = steps)
+  + wait (0 = forever, 1-8 = steps)
+  + work (0 = forever, 1-8 = steps)
   + take (n, s, e, w, l, r, u, x)
   + give (n, s, e, w, l, r, u, x, i)
   + swap (1-9 = inventory items)
-  + loop (0 = forever, 1-9 = steps)
-  + bomb (0 = now, 1-9 = steps)
+  + loop (0 = forever, 1-8 = steps)
+  + bomb (0 = now, 1-8 = steps)
   + stop (breakpoint)
 * items in the level
   + loot (aim is to add these to inventory, quote for each level)
