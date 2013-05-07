@@ -9,30 +9,7 @@ module Computer
     
     attr_reader :opcode, :value
 
-    OPCODES = [
-      :noop,
-      :move,
-      :turn,
-      :sleep,
-      :use,
-      :get,
-      :drop,
-      :wield,
-      :loop,
-      :explode
-    ]
-
-    DIRECTIONS = [
-      :here,
-      :north,
-      :south,
-      :east,
-      :west,
-      :front,
-      :right,
-      :behind,
-      :left
-    ]
+    OPCODES = [ :noop, :move, :turn, :sleep, :use, :get, :drop, :wield, :loop, :explode ]
 
     def initialize(opcode, value)
       @opcode, @value = opcode, value
@@ -56,7 +33,7 @@ module Computer
           @data -= 1
           @done = true if @data == 0
         when :turn
-          memory.turn(0)
+          _turn(memory)
           @done = true
         when :sleep
           raise RuntimeError, "? BAD DATA" if @value <= 0
@@ -96,6 +73,42 @@ module Computer
       "#{@opcode} #{@value}"
     end
 
+    private
+
+    DIRECTIONS = [ :here, :north, :east, :south, :west, :front, :right, :behind, :left ]
+
+    def _turn(memory)
+      heading = case @data
+        when :here
+          memory.heading
+        when :north
+          1
+        when :east
+          2
+        when :south
+          3
+        when :west
+          4
+        when :front
+          memory.heading
+        when :right
+          heading = memory.heading + 1
+          heading = heading - 4 if heading > 4
+          heading
+        when :behind
+          heading = memory.heading + 2
+          heading = heading - 4 if heading > 4
+          heading
+        when :left
+          heading = memory.heading - 1
+          heading = heading + 4 if heading < 1
+          heading
+        else
+          raise RuntimeError, "? BAD DIRECTION"
+      end
+      memory.face(heading)
+    end
+
   end
 
   class Memory
@@ -107,17 +120,32 @@ module Computer
 
     def initialize
       @position = [0, 0]
-      @heading = [0, -1]
+      @heading = 1
       @inventory = Array.new(8, 0)
       @held = 0
     end
 
     def move
       puts "MOV"
+      case @heading
+        when 1
+          @position[1] -= 1
+        when 2
+          @position[0] += 1
+        when 3
+          @position[1] += 1
+        when 4
+          @position[0] -= 1
+      end
     end
 
-    def turn(direction)
-      puts "ROT #{direction}"
+    def face(heading)
+      puts "ROT #{heading}"
+      @heading = heading
+    end
+
+    def to_s
+      "#{@heading}:[#{@position[0]}, #{@position[1]}]"
     end
 
   end
@@ -149,6 +177,7 @@ module Computer
         @head += 1
         _load
       end
+      puts @memory
     end
 
     def running?
