@@ -15,17 +15,14 @@ module Computer
       @opcode, @value = opcode, value
       @data = nil
       @done = true
-      @blocked = false
     end
 
     def load
       @data = @value if @done
       @done = false
-      @blocked = false
     end
 
     def execute!(cpu, memory)
-      @blocked = false
       case @opcode
         when :noop
           cpu.noop
@@ -33,22 +30,23 @@ module Computer
         when :move
           raise RuntimeError, "? BAD DATA" if @data <= 0
           memory.move
-          @blocked = true
+          cpu.block!
           @data -= 1
           @done = true if @data == 0
         when :turn
           _turn(memory)
-          @blocked = true
           @done = true
         when :sleep
           raise RuntimeError, "? BAD DATA" if @value <= 0
-          @blocked = true
+          cpu.block!
           @data -= 1
           @done = true if @data == 0
         when :use
+          raise RuntimeError, "? BAD DATA" if @value <= 0
           memory.use
-          @blocked = true
-          @done = true
+          cpu.block!
+          @data -= 1
+          @done = true if @data == 0
         when :get
           memory.get
           @done = true
@@ -74,10 +72,6 @@ module Computer
 
     def done?
       @done
-    end
-
-    def blocked?
-      @blocked
     end
 
     def to_s
@@ -171,6 +165,7 @@ module Computer
       @jump_table = []
       @instruction = nil
       @memory = memory
+      @blocked = false
     end
 
     def push(opcode, value = nil)
@@ -183,14 +178,19 @@ module Computer
     end
 
     def step!
-      puts @instruction
-      @instruction.execute!(self, @memory) while !@instruction.done? && !@instruction.blocked?
-      puts "---"
-      if @instruction.done?
-        puts "XXX"
-        @head += 1
-        _load
+      puts "+++ STEP +++"
+      @blocked = false
+      while running? && !@blocked
+        @instruction.execute!(self, @memory)
+        if @instruction.done?
+          @head += 1
+          _load
+        end
       end
+    end
+
+    def block!
+      @blocked = true
     end
 
     def running?
@@ -231,7 +231,7 @@ if __FILE__ == $0
   processor = Computer::Processor.new(Computer::Memory.new)
 
   processor.push(:noop)
-  processor.push(:move, 3)
+  processor.push(:move, 2)
   processor.push(:loop, 2)
   processor.push(:turn, :left)
   processor.push(:loop, 1)
