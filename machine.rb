@@ -1,22 +1,10 @@
 #!/usr/bin/env ruby
 
-# A computer runs a program tape. You load, run, step, reset. It had inputs and
-# outputs.
-
 module Computer
 
   class RuntimeError < Exception
   end
 
-# + M move (0 = until blocked, 1-8 = steps)
-# + T turn (x, n, s, e, w, f, r, b, l)
-# + Z sleep (1-8 = steps)
-# + U use (1-8 = steps)
-# + D drop (x, n, e, s, w, f, r, b, l)
-# + W wield (0 = nothing, 1-8 = inventory items)
-# + L loop (1-8 = steps)
-# + X explode (0-8 = steps)
-# + N noop (used for loop point only)
   class Instruction
     
     attr_reader :opcode, :value
@@ -48,16 +36,57 @@ module Computer
 
     def initialize(opcode, value)
       @opcode, @value = opcode, value
+      @data = nil
+      @done = true
     end
 
     def load
+      @data = @value if @done
+      @done = false
     end
 
-    def execute
+    def execute!(cpu)
+      puts "#{@opcode} #{@data}"
+      case @opcode
+        when :noop
+          @done = true
+          cpu.noop
+        when :move
+          @data -= 1
+          @done = true if @data < 0
+          cpu.move
+        when :turn
+          @done = true
+          cpu.turn(data)
+        when :sleep
+          @data -= 1
+          @done = true if @data < 0
+          cpu.wait
+        when :use
+          @done = true
+          cpu.use
+        when :get
+          @done = true
+          cpu.get
+        when :drop
+          @done = true
+          cpu.drop
+        when :wield
+          @done = true
+          cpu.wield
+        when :loop
+          @done = true
+          cpu.loop
+        when :explode
+          @done = true
+          cpu.explode
+        else
+          raise RuntimeError, "? NO SUCH OPCODE"
+      end
     end
 
     def done?
-      false
+      @done
     end
 
     def to_s
@@ -66,13 +95,32 @@ module Computer
 
   end
 
+  class Bus
+
+    attr_accessor :position
+    attr_accessor :heading
+    attr_accessor :inventory
+    attr_accessor :held
+
+    def initialize
+      @position = [0, 0]
+      @heading = [0, -1]
+      @inventory = Array.new(8, 0)
+      @held = 0
+    end
+
+  end
+
   class Processor
+
+    attr_accessor :bus
 
     def initialize
       @head = -1
       @tape = []
+      @jump_table = []
       @instruction = nil
-      reset
+      @bus = Bus.new
     end
 
     def push(opcode, value = nil)
@@ -80,17 +128,49 @@ module Computer
     end
 
     def reset
+      @head = 0
+      _load
     end
 
-    def step
+    def step!
+      @instruction.execute!(self)
+      if @instruction.done?
+        @head += 1
+        _load
+      end
     end
 
     def running?
-      true
+      @head >= 0
     end
 
     def to_s
       @tape.join("\n")
+    end
+
+    def noop
+      @jump_table << @head
+    end
+
+    def move
+      @bus.move
+    end
+
+    def turn
+      @bus.turn
+    end
+
+    def wait
+      @bus.wait
+    end
+
+    private
+
+    def _load
+      @head = -1 if @head >= @tape.length
+      return unless running?
+      @instruction = @tape[@head]
+      @instruction.load
     end
 
   end
@@ -113,7 +193,7 @@ if __FILE__ == $0
   processor.reset
 
   while processor.running?
-    processor.step
+    processor.step!
   end
 
 end
