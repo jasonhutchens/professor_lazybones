@@ -15,32 +15,39 @@ module Computer
       @opcode, @value = opcode, value
       @data = nil
       @done = true
+      @blocked = false
     end
 
     def load
       @data = @value if @done
       @done = false
+      @blocked = false
     end
 
     def execute!(cpu, memory)
+      @blocked = false
       case @opcode
         when :noop
           cpu.noop
           @done = true
         when :move
-          raise RuntimeError, "? BAD DATA" if @value <= 0
+          raise RuntimeError, "? BAD DATA" if @data <= 0
           memory.move
+          @blocked = true
           @data -= 1
           @done = true if @data == 0
         when :turn
           _turn(memory)
+          @blocked = true
           @done = true
         when :sleep
           raise RuntimeError, "? BAD DATA" if @value <= 0
+          @blocked = true
           @data -= 1
           @done = true if @data == 0
         when :use
           memory.use
+          @blocked = true
           @done = true
         when :get
           memory.get
@@ -67,6 +74,10 @@ module Computer
 
     def done?
       @done
+    end
+
+    def blocked?
+      @blocked
     end
 
     def to_s
@@ -152,7 +163,7 @@ module Computer
 
   class Processor
 
-    attr_accessor :bus
+    attr_accessor :memory
 
     def initialize(memory)
       @head = -1
@@ -172,12 +183,14 @@ module Computer
     end
 
     def step!
-      @instruction.execute!(self, @memory)
+      puts @instruction
+      @instruction.execute!(self, @memory) while !@instruction.done? && !@instruction.blocked?
+      puts "---"
       if @instruction.done?
+        puts "XXX"
         @head += 1
         _load
       end
-      puts @memory
     end
 
     def running?
@@ -227,6 +240,7 @@ if __FILE__ == $0
 
   while processor.running?
     processor.step!
+    puts processor.memory
   end
 
 end
