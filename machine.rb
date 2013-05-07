@@ -45,41 +45,44 @@ module Computer
       @done = false
     end
 
-    def execute!(cpu)
-      puts "#{@opcode} #{@data}"
+    def execute!(cpu, memory)
       case @opcode
         when :noop
-          @done = true
           cpu.noop
+          @done = true
         when :move
+          raise RuntimeError, "? BAD DATA" if @value <= 0
+          memory.move
           @data -= 1
-          @done = true if @data < 0
-          cpu.move
+          @done = true if @data == 0
         when :turn
+          memory.turn(0)
           @done = true
-          cpu.turn(data)
         when :sleep
+          raise RuntimeError, "? BAD DATA" if @value <= 0
           @data -= 1
-          @done = true if @data < 0
-          cpu.wait
+          @done = true if @data == 0
         when :use
+          memory.use
           @done = true
-          cpu.use
         when :get
+          memory.get
           @done = true
-          cpu.get
         when :drop
+          memory.drop(@data)
           @done = true
-          cpu.drop
         when :wield
+          memory.wield(@data)
           @done = true
-          cpu.wield
         when :loop
-          @done = true
-          cpu.loop
+          raise RuntimeError, "? BAD DATA" if @value <= 0
+          @done = true if @data == 0
+          @data -= 1
+          cpu.loop unless @done
         when :explode
-          @done = true
-          cpu.explode
+          memory.explode(@data)
+          @done = true if @data == 0
+          @data -= 1
         else
           raise RuntimeError, "? NO SUCH OPCODE"
       end
@@ -95,7 +98,7 @@ module Computer
 
   end
 
-  class Bus
+  class Memory
 
     attr_accessor :position
     attr_accessor :heading
@@ -109,18 +112,26 @@ module Computer
       @held = 0
     end
 
+    def move
+      puts "MOV"
+    end
+
+    def turn(direction)
+      puts "ROT #{direction}"
+    end
+
   end
 
   class Processor
 
     attr_accessor :bus
 
-    def initialize
+    def initialize(memory)
       @head = -1
       @tape = []
       @jump_table = []
       @instruction = nil
-      @bus = Bus.new
+      @memory = memory
     end
 
     def push(opcode, value = nil)
@@ -133,7 +144,7 @@ module Computer
     end
 
     def step!
-      @instruction.execute!(self)
+      @instruction.execute!(self, @memory)
       if @instruction.done?
         @head += 1
         _load
@@ -150,18 +161,14 @@ module Computer
 
     def noop
       @jump_table << @head
+      puts "NOP"
     end
 
-    def move
-      @bus.move
-    end
-
-    def turn
-      @bus.turn
-    end
-
-    def wait
-      @bus.wait
+    def loop
+      puts "LOOP"
+      @head = @jump_table.pop
+      raise "? BAD ACCESS" if @head.nil?
+      _load
     end
 
     private
@@ -179,16 +186,13 @@ end
 
 if __FILE__ == $0
 
-  processor = Computer::Processor.new  
+  processor = Computer::Processor.new(Computer::Memory.new)
 
-  processor.push(:move, 7)
   processor.push(:noop)
-  processor.push(:turn, :left)
   processor.push(:move, 3)
   processor.push(:loop, 2)
-  processor.push(:get, :north)
-  processor.push(:wield, 1)
-  processor.push(:use, 2)
+  processor.push(:turn, :left)
+  processor.push(:loop, 1)
 
   processor.reset
 
