@@ -1,1 +1,1 @@
-rvm use 2.0.0@dwarf_squad --create
+rvm use ree@professor_lazybones --create

@@ -1,10 +1,10 @@
-Dwarf Squad
-===========
+Professor Lazybones
+===================
 
-Dwarf Squad is a game about making games
+Professor Lazybones is a game about making games
 
 * map is made of 48px tiles
-* aim is to god 4 dwarves to collect loot
+* aim is to god 4 lab assistants to collect loot
 * limited set of commands cards
   + move (0 = until blocked, 1-8 = steps)
     - moving against a pushable takes double the steps
@@ -26,7 +26,7 @@ Dwarf Squad is a game about making games
   + switch
   + door
   + key
-* dwarves have HP and perhaps different skillz
+* lab assistants have HP and perhaps different skillz
 * select a dwarf, and command it
 * play / step through the level
 * dwarf dialog for errors etc
